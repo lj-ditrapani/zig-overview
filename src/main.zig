@@ -26,13 +26,18 @@ pub fn main() !void {
     try writer.print("Run `zig build test` to run the tests.\n", .{});
     try bw.flush();
     var todoList = std.ArrayList(item.Item).init(allocator);
-    loop(&todoList);
-}
-
-pub fn loop(todoList: *std.ArrayList(item.Item)) void {
     var r: result.Result = result.Result{ .help = {} };
+    const buf = try allocator.alloc(u8, 256);
     while (r != result.Result.exit) {
-        r = todo.todo(todoList);
+        try writer.print("Enter command:", .{});
+        const line = try reader.readUntilDelimiterOrEof(buf, '\n');
+        if (line) |l| {
+            try writer.print("Got {s}", .{l});
+            r = todo.todo(&todoList);
+            if (std.mem.eql(u8, l, "q")) {
+                r = .{ .exit = {} };
+            }
+        }
     }
 }
 
