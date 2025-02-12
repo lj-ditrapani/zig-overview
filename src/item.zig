@@ -4,6 +4,6 @@ pub const State = enum {
 };
 
 pub const Item = struct {
-    description: []u8,
+    description: []const u8,
     state: State = State.todo,
 };

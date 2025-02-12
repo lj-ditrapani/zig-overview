@@ -15,12 +15,22 @@ pub fn main() !void {
     var todoList = std.ArrayList(item.Item).init(allocator);
     var r: result.Result = result.Result{ .help = {} };
     const buf = try allocator.alloc(u8, 256);
-    while (r != result.Result.exit) {
+    while (r != result.Result.quit) {
         try writer.print("\nEnter a command. Enter help to list available commands: ", .{});
-        const maybeLine = try reader.readUntilDelimiterOrEof(buf, '\n');
-        if (maybeLine) |line| {
-            try writer.print("Got {s}", .{line});
-            r = todo.todo(&todoList, line);
+        const line = try reader.readUntilDelimiterOrEof(buf, '\n');
+        r = try todo.todo(&todoList, line, allocator);
+        switch (r) {
+            result.Result.quit => try writer.print("bye!\n", .{}),
+            result.Result.help => try writer.print(result.help, .{}),
+            result.Result.emptyListHint => try writer.print(result.emptyListHint, .{}),
+            result.Result.list => {
+                for (todoList.items, 1..) |todoItem, index| {
+                    try writer.print("{d}: {s} {?s}\n", .{ index, todoItem.description, std.enums.tagName(item.State, todoItem.state) });
+                }
+            },
+            result.Result.unknownCommand => try writer.print(result.unknownCommand, .{}),
+            result.Result.doneIndexError => try writer.print(result.doneIndexError, .{}),
+            else => try writer.print("not implemented yet", .{}),
         }
     }
 }

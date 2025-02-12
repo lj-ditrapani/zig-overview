@@ -1,6 +1,6 @@
 const outputzig = @import("./output.zig");
 
-const help =
+pub const help =
     \\
     \\Available commands:
     \\help                              Displays this help
@@ -9,15 +9,15 @@ const help =
     \\done <todo item number>           Marks the item as done
     \\quit                              Exit the program
 ;
-const emptyListHint = "List is empty.  Try adding some items";
-const unknownCommand = "I do not understand your command.  " ++
+pub const emptyListHint = "List is empty.  Try adding some items";
+pub const unknownCommand = "I do not understand your command.  " ++
     "Enter help to display available commands.";
-const unexpectedArg = " command does not take any arguments";
-const missingArg = " command requires an argument";
-const doneIndexError = "Done command must have a valid item index";
+pub const unexpectedArg = " command does not take any arguments";
+pub const missingArg = " command requires an argument";
+pub const doneIndexError = "Done command must have a valid item index";
 
 pub const Result = union(enum) {
-    exit,
+    quit,
     help,
     list,
     unknownCommand,
