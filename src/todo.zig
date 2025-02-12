@@ -10,7 +10,6 @@ pub fn todo(todoList: *std.ArrayList(item.Item), maybeLine: ?[]u8, allocator: st
     const cmdStr = parts.next() orelse return .{ .unknownCommand = {} };
     const rawArg = parts.rest();
     const arg = std.mem.trim(u8, rawArg, " \t\r");
-    std.debug.print("cmd {s}\n", .{cmdStr});
     const cmd = std.meta.stringToEnum(Command, cmdStr) orelse return .{ .unknownCommand = {} };
     return switch (cmd) {
         Command.quit => .{ .quit = {} },
@@ -38,7 +37,7 @@ pub fn processDone(todoList: *std.ArrayList(item.Item), arg: []const u8) result.
     const index = std.fmt.parseInt(u16, arg, 10) catch return .{ .doneIndexError = {} };
 
     if (index > 0 and index <= todoList.items.len) {
-        var i = todoList.items[index - 1];
+        var i = &todoList.items[index - 1];
         i.state = item.State.done;
         return .{ .list = {} };
     } else {
