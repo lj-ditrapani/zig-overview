@@ -1,9 +1,11 @@
 const std = @import("std");
+const tagName = std.enums.tagName;
 const item = @import("./item.zig");
 const Item = @import("./item.zig").Item;
 const output = @import("./output.zig");
 const result = @import("./result.zig");
 const Result = @import("./result.zig").Result;
+const MissingArgCommand = result.MissingArgCommand;
 const todo = @import("./todo.zig").todo;
 
 pub fn main() !void {
@@ -22,25 +24,26 @@ pub fn main() !void {
         const line = try reader.readUntilDelimiterOrEof(buf, '\n');
         r = todo(&todoList, line, allocator);
         switch (r) {
-            Result.quit => try writer.print("bye!\n", .{}),
-            Result.help => try writer.print(result.help, .{}),
-            Result.emptyListHint => try writer.print(result.emptyListHint, .{}),
-            Result.list => {
+            .quit => try writer.print("bye!\n", .{}),
+            .help => try writer.print(result.help, .{}),
+            .emptyListHint => try writer.print(result.emptyListHint, .{}),
+            .list => {
                 for (todoList.items, 1..) |todoItem, index| {
                     try writer.print(
                         "{d}: {s} {?s}\n",
-                        .{ index, todoItem.description, std.enums.tagName(
+                        .{ index, todoItem.description, tagName(
                             item.State,
                             todoItem.state,
                         ) },
                     );
                 }
             },
-            Result.unknownCommand => try writer.print(
+            .unknownCommand => try writer.print(
                 result.unknownCommand,
                 .{},
             ),
-            Result.doneIndexError => try writer.print(result.doneIndexError, .{}),
+            .missingArg => |cmd| try writer.print("{?s} {s}", .{ tagName(MissingArgCommand, cmd), result.missingArg }),
+            .doneIndexError => try writer.print(result.doneIndexError, .{}),
             else => try writer.print("not implemented yet", .{}),
         }
     }
