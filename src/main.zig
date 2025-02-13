@@ -20,7 +20,7 @@ pub fn main() !void {
     while (r != Result.quit) {
         try writer.print("\nEnter a command. Enter help to list available commands: ", .{});
         const line = try reader.readUntilDelimiterOrEof(buf, '\n');
-        r = try todo(&todoList, line, allocator);
+        r = todo(&todoList, line, allocator);
         switch (r) {
             Result.quit => try writer.print("bye!\n", .{}),
             Result.help => try writer.print(result.help, .{}),

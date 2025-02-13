@@ -6,11 +6,7 @@ const Result = @import("./result.zig").Result;
 
 const Command = enum { help, add, done, quit, list };
 
-pub fn todo(
-    todoList: *std.ArrayList(Item),
-    maybeLine: ?[]u8,
-    allocator: Allocator,
-) Allocator.Error!Result {
+pub fn todo(todoList: *std.ArrayList(Item), maybeLine: ?[]u8, allocator: Allocator) Result {
     const line = maybeLine orelse return .{ .unknownCommand = {} };
     var parts = std.mem.tokenizeAny(u8, line, " \t\r");
     const cmdStr = parts.next() orelse return .{ .unknownCommand = {} };
@@ -21,7 +17,7 @@ pub fn todo(
         Command.quit => .{ .quit = {} },
         Command.help => .{ .help = {} },
         Command.list => processList(todoList),
-        Command.add => try processAdd(todoList, arg, allocator),
+        Command.add => processAdd(todoList, arg, allocator),
         Command.done => processDone(todoList, arg),
     };
 }
@@ -33,13 +29,9 @@ pub fn processList(todoList: *std.ArrayList(Item)) Result {
     };
 }
 
-pub fn processAdd(
-    todoList: *std.ArrayList(Item),
-    arg: []const u8,
-    allocator: Allocator,
-) Allocator.Error!Result {
-    const argCopy = try allocator.dupe(u8, arg);
-    try todoList.append(.{ .state = item.State.todo, .description = argCopy });
+pub fn processAdd(todoList: *std.ArrayList(Item), arg: []const u8, allocator: Allocator) Result {
+    const argCopy = allocator.dupe(u8, arg) catch unreachable;
+    todoList.append(.{ .state = item.State.todo, .description = argCopy }) catch unreachable;
     return .{ .list = {} };
 }
 
