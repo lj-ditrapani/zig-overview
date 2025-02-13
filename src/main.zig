@@ -27,24 +27,23 @@ pub fn main() !void {
             .quit => try writer.print("bye!\n", .{}),
             .help => try writer.print(result.help, .{}),
             .emptyListHint => try writer.print(result.emptyListHint, .{}),
-            .list => {
-                for (todoList.items, 1..) |todoItem, index| {
-                    try writer.print(
-                        "{d}: {s} {?s}\n",
-                        .{ index, todoItem.description, tagName(
-                            item.State,
-                            todoItem.state,
-                        ) },
-                    );
-                }
-            },
+            .list => try printList(todoList, writer),
             .unknownCommand => try writer.print(
                 result.unknownCommand,
                 .{},
             ),
             .missingArg => |cmd| try writer.print("{?s} {s}", .{ tagName(MissingArgCommand, cmd), result.missingArg }),
             .doneIndexError => try writer.print(result.doneIndexError, .{}),
-            else => try writer.print("not implemented yet", .{}),
         }
+    }
+}
+
+fn printList(list: std.ArrayList(Item), writer: anytype) !void {
+    for (list.items, 1..) |todoItem, index| {
+        const state = switch (todoItem.state) {
+            .done => "(done)",
+            .todo => "",
+        };
+        try writer.print("{d}: {s} {s}\n", .{ index, todoItem.description, state });
     }
 }

@@ -10,7 +10,6 @@ pub const help =
 pub const emptyListHint = "List is empty.  Try adding some items";
 pub const unknownCommand = "I do not understand your command.  " ++
     "Enter help to display available commands.";
-pub const unexpectedArg = "command does not take any arguments";
 pub const missingArg = "command requires an argument";
 pub const doneIndexError = "Done command must have a valid item index";
 
@@ -20,7 +19,6 @@ pub const Result = union(enum) {
     list,
     unknownCommand,
     missingArg: MissingArgCommand,
-    unexpectedArg: UnexpectedArgCommand,
     doneIndexError,
     emptyListHint,
 };
