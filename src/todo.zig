@@ -1,4 +1,5 @@
 const std = @import("std");
+const ArrayList = std.ArrayList;
 const Allocator = @import("std").mem.Allocator;
 const item = @import("./item.zig");
 const Item = item.Item;
@@ -6,7 +7,7 @@ const Result = @import("./result.zig").Result;
 
 const Command = enum { help, add, done, quit, list };
 
-pub fn todo(todoList: *std.ArrayList(Item), maybeLine: ?[]u8, allocator: Allocator) Result {
+pub fn todo(todoList: *ArrayList(Item), maybeLine: ?[]u8, allocator: Allocator) Result {
     const line = maybeLine orelse return .{ .unknownCommand = {} };
     var parts = std.mem.tokenizeAny(u8, line, " \t\r");
     const cmdStr = parts.next() orelse return .{ .unknownCommand = {} };
@@ -16,20 +17,20 @@ pub fn todo(todoList: *std.ArrayList(Item), maybeLine: ?[]u8, allocator: Allocat
     return switch (cmd) {
         .quit => .{ .quit = {} },
         .help => .{ .help = {} },
-        .list => processList(todoList),
+        .list => processList(todoList.*),
         .add => processAdd(todoList, arg, allocator),
         .done => processDone(todoList, arg),
     };
 }
 
-pub fn processList(todoList: *std.ArrayList(Item)) Result {
+pub fn processList(todoList: ArrayList(Item)) Result {
     return switch (todoList.items.len) {
         0 => .{ .emptyListHint = {} },
         else => .{ .list = {} },
     };
 }
 
-pub fn processAdd(todoList: *std.ArrayList(Item), arg: []const u8, allocator: Allocator) Result {
+pub fn processAdd(todoList: *ArrayList(Item), arg: []const u8, allocator: Allocator) Result {
     if (arg.len == 0) {
         return .{ .missingArg = .add };
     }
@@ -38,7 +39,7 @@ pub fn processAdd(todoList: *std.ArrayList(Item), arg: []const u8, allocator: Al
     return .{ .list = {} };
 }
 
-pub fn processDone(todoList: *std.ArrayList(Item), arg: []const u8) Result {
+pub fn processDone(todoList: *ArrayList(Item), arg: []const u8) Result {
     if (arg.len == 0) {
         return .{ .missingArg = .done };
     }

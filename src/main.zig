@@ -1,4 +1,5 @@
 const std = @import("std");
+const ArrayList = std.ArrayList;
 const tagName = std.enums.tagName;
 const item = @import("./item.zig");
 const Item = item.Item;
@@ -16,7 +17,7 @@ pub fn main() !void {
     const reader = std.io.getStdIn().reader();
 
     try writer.print("\nTodo\n", .{});
-    var todoList = std.ArrayList(Item).init(allocator);
+    var todoList = ArrayList(Item).init(allocator);
     var r: Result = Result{ .help = {} };
     const buf = try allocator.alloc(u8, 256);
     while (r != Result.quit) {
@@ -38,7 +39,7 @@ pub fn main() !void {
     }
 }
 
-fn printList(list: std.ArrayList(Item), writer: anytype) !void {
+fn printList(list: ArrayList(Item), writer: anytype) !void {
     for (list.items, 1..) |todoItem, index| {
         const state = switch (todoItem.state) {
             .done => "(done)",
