@@ -1,7 +1,7 @@
 const std = @import("std");
 const Allocator = @import("std").mem.Allocator;
 const item = @import("./item.zig");
-const Item = @import("./item.zig").Item;
+const Item = item.Item;
 const Result = @import("./result.zig").Result;
 
 const Command = enum { help, add, done, quit, list };

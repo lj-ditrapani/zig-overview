@@ -1,10 +1,10 @@
 const std = @import("std");
 const tagName = std.enums.tagName;
 const item = @import("./item.zig");
-const Item = @import("./item.zig").Item;
+const Item = item.Item;
 const output = @import("./output.zig");
 const result = @import("./result.zig");
-const Result = @import("./result.zig").Result;
+const Result = result.Result;
 const MissingArgCommand = result.MissingArgCommand;
 const todo = @import("./todo.zig").todo;
 
