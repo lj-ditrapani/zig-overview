@@ -1,5 +1,3 @@
-const outputzig = @import("./output.zig");
-
 pub const help =
     \\
     \\Available commands:
