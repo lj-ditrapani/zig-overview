@@ -1,6 +1,5 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
-const tagName = std.enums.tagName;
 const item = @import("./item.zig");
 const Item = item.Item;
 const output = @import("./output.zig");
@@ -33,7 +32,7 @@ pub fn main() !void {
                 result.unknownCommand,
                 .{},
             ),
-            .missingArg => |cmd| try writer.print("{?s} {s}", .{ tagName(MissingArgCommand, cmd), result.missingArg }),
+            .missingArg => |cmd| try writer.print("{s} {s}", .{ cmd.tagName(), result.missingArg }),
             .doneIndexError => try writer.print(result.doneIndexError, .{}),
         }
     }
@@ -41,10 +40,7 @@ pub fn main() !void {
 
 fn printList(list: ArrayList(Item), writer: anytype) !void {
     for (list.items, 1..) |todoItem, index| {
-        const state = switch (todoItem.state) {
-            .done => "(done)",
-            .todo => "",
-        };
+        const state = todoItem.state.toString();
         try writer.print("{d}: {s} {s}\n", .{ index, todoItem.description, state });
     }
 }

@@ -23,6 +23,16 @@ pub const Result = union(enum) {
     emptyListHint,
 };
 
-pub const MissingArgCommand = enum { add, done };
+pub const MissingArgCommand = enum {
+    add,
+    done,
+
+    pub fn tagName(self: MissingArgCommand) []const u8 {
+        return switch (self) {
+            .add => "add",
+            .done => "done",
+        };
+    }
+};
 
 const UnexpectedArgCommand = enum { help, list, quit };
