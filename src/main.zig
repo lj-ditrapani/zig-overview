@@ -17,7 +17,6 @@ pub fn main() !void {
     const reader = std.io.getStdIn().reader();
 
     try writer.print("\nTodo\n", .{});
-    try writer.print(colorTemplate(Color.blue), .{"blue?"});
     var todoList = ArrayList(Item).init(allocator);
     var r: Result = Result{ .help = {} };
     const buf = try allocator.alloc(u8, 256);
@@ -26,16 +25,13 @@ pub fn main() !void {
         const line = try reader.readUntilDelimiterOrEof(buf, '\n');
         r = todo(&todoList, line, allocator);
         switch (r) {
-            .quit => try writer.print("bye!\n", .{}),
-            .help => try writer.print(result.help, .{}),
-            .emptyListHint => try writer.print(result.emptyListHint, .{}),
+            .quit => try writer.print(colorTemplate(Color.blue), .{"bye!\n"}),
+            .help => try writer.print(colorTemplate(Color.yellow), .{result.help}),
+            .emptyListHint => try writer.print(colorTemplate(Color.yellow), .{result.emptyListHint}),
             .list => try printList(todoList, writer),
-            .unknownCommand => try writer.print(
-                result.unknownCommand,
-                .{},
-            ),
-            .missingArg => |cmd| try writer.print("{s} {s}", .{ cmd.tagName(), result.missingArg }),
-            .doneIndexError => try writer.print(result.doneIndexError, .{}),
+            .unknownCommand => try writer.print(colorTemplate(Color.red), .{result.unknownCommand}),
+            .missingArg => |cmd| try writer.print(colorTemplate2(Color.red, "{s} {s}"), .{ cmd.tagName(), result.missingArg }),
+            .doneIndexError => try writer.print(colorTemplate(Color.red), .{result.doneIndexError}),
         }
     }
 }
@@ -48,5 +44,9 @@ fn printList(list: ArrayList(Item), writer: std.fs.File.Writer) !void {
 }
 
 inline fn colorTemplate(color: Color) []const u8 {
-    return "\u{001B}[" ++ color.toCode() ++ "m{s}\u{001B}[0m";
+    return colorTemplate2(color, "{s}");
+}
+
+inline fn colorTemplate2(color: Color, body: []const u8) []const u8 {
+    return "\u{001B}[" ++ color.toCode() ++ "m" ++ body ++ "\u{001B}[0m";
 }

@@ -29,8 +29,8 @@ pub const MissingArgCommand = enum {
 
     pub fn tagName(self: MissingArgCommand) []const u8 {
         return switch (self) {
-            .add => "add",
-            .done => "done",
+            .add => "Add",
+            .done => "Done",
         };
     }
 };
