@@ -5,7 +5,7 @@ pub const State = enum {
     pub fn toString(self: State) []const u8 {
         return switch (self) {
             .todo => "",
-            .done => "(done)",
+            .done => " (done)",
         };
     }
 };
