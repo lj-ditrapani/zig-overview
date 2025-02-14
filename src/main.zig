@@ -1,5 +1,7 @@
 const std = @import("std");
+const bufPrint = std.fmt.bufPrint;
 const ArrayList = std.ArrayList;
+const Writer = std.fs.File.Writer;
 const item = @import("./item.zig");
 const Item = item.Item;
 const output = @import("./output.zig");
@@ -25,37 +27,47 @@ pub fn main() !void {
         const line = try reader.readUntilDelimiterOrEof(buf, '\n');
         r = todo(&todoList, line, allocator);
         switch (r) {
-            .quit => try writer.print(colorTemplate(Color.blue), .{"bye!\n"}),
-            .help => try writer.print(colorTemplate(Color.yellow), .{result.help}),
-            .emptyListHint => try writer.print(colorTemplate(Color.yellow), .{result.emptyListHint}),
+            .quit => try writer.print(colored(Color.blue), .{"bye!\n"}),
+            .help => try writer.print(colored(Color.yellow), .{result.help}),
+            .emptyListHint => try writer.print(
+                colored(Color.yellow),
+                .{result.emptyListHint},
+            ),
             .list => try printList(todoList, writer, buf),
-            .unknownCommand => try writer.print(colorTemplate(Color.red), .{result.unknownCommand}),
-            .missingArg => |cmd| try writer.print(colorTemplate2(Color.red, "{s} {s}"), .{ cmd.tagName(), result.missingArg }),
-            .doneIndexError => try writer.print(colorTemplate(Color.red), .{result.doneIndexError}),
+            .unknownCommand => try writer.print(colored(Color.red), .{result.unknownCommand}),
+            .missingArg => |cmd| try writer.print(
+                colored2(Color.red, "{s} {s}"),
+                .{ cmd.tagName(), result.missingArg },
+            ),
+            .doneIndexError => try writer.print(colored(Color.red), .{result.doneIndexError}),
         }
     }
 }
 
-fn printList(list: ArrayList(Item), writer: std.fs.File.Writer, buf: []u8) !void {
+fn printList(list: ArrayList(Item), writer: Writer, buf: []u8) !void {
     for (list.items, 1..) |todoItem, index| {
         try printItem(index, todoItem, writer, buf);
     }
 }
 
-fn printItem(index: usize, todoItem: Item, writer: std.fs.File.Writer, buf: []u8) !void {
+fn printItem(index: usize, todoItem: Item, writer: Writer, buf: []u8) !void {
     const state = todoItem.state.toString();
     const descColor = switch (todoItem.state) {
         .todo => Color.green,
         .done => Color.blue,
     };
-    const msg = try std.fmt.bufPrint(buf, "{d}: \u{001B}[{s}m{s}\u{001B}[0m{s}", .{ index, descColor.toCode(), todoItem.description, state });
+    const msg = try bufPrint(
+        buf,
+        "{d}: \u{001B}[{s}m{s}\u{001B}[0m{s}",
+        .{ index, descColor.toCode(), todoItem.description, state },
+    );
     try writer.print("{s}\n", .{msg});
 }
 
-inline fn colorTemplate(color: Color) []const u8 {
-    return colorTemplate2(color, "{s}");
+inline fn colored(color: Color) []const u8 {
+    return colored2(color, "{s}");
 }
 
-inline fn colorTemplate2(color: Color, body: []const u8) []const u8 {
+inline fn colored2(color: Color, body: []const u8) []const u8 {
     return "\u{001B}[" ++ color.toCode() ++ "m" ++ body ++ "\u{001B}[0m";
 }
