@@ -1,4 +1,18 @@
-pub const Color = enum { blue, green, red, yellow };
+pub const Color = enum {
+    red,
+    green,
+    yellow,
+    blue,
+
+    pub fn toCode(self: Color) u8 {
+        return switch (self) {
+            .red => 31,
+            .green => 32,
+            .yellow => 33,
+            .blue => 34,
+        };
+    }
+};
 
 pub const ColoredString = struct {
     color: Color,

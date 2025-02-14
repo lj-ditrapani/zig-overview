@@ -7,6 +7,7 @@ const result = @import("./result.zig");
 const Result = result.Result;
 const MissingArgCommand = result.MissingArgCommand;
 const todo = @import("./todo.zig").todo;
+const Color = @import("./output.zig").Color;
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -16,6 +17,7 @@ pub fn main() !void {
     const reader = std.io.getStdIn().reader();
 
     try writer.print("\nTodo\n", .{});
+    try printInColor(Color.blue, "blue?", writer);
     var todoList = ArrayList(Item).init(allocator);
     var r: Result = Result{ .help = {} };
     const buf = try allocator.alloc(u8, 256);
@@ -38,9 +40,13 @@ pub fn main() !void {
     }
 }
 
-fn printList(list: ArrayList(Item), writer: anytype) !void {
+fn printList(list: ArrayList(Item), writer: std.fs.File.Writer) !void {
     for (list.items, 1..) |todoItem, index| {
         const state = todoItem.state.toString();
         try writer.print("{d}: {s} {s}\n", .{ index, todoItem.description, state });
     }
+}
+
+fn printInColor(color: Color, message: []const u8, writer: std.fs.File.Writer) !void {
+    try writer.print("\u{001B}[{d}m{s}\u{001B}[0m", .{ color.toCode(), message });
 }
