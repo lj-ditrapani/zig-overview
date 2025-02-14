@@ -11,8 +11,11 @@ const MissingArgCommand = result.MissingArgCommand;
 const todo = @import("./todo.zig").todo;
 const Color = @import("./output.zig").Color;
 
-const setColor = "\u{001B}[";
+const setColor = "\u{001B}[{s}m{s}";
 const resetColor = "\u{001B}[0m";
+const withColor = setColor ++ resetColor ++ "\n";
+const withColor2 = setColor ++ " {s}" ++ resetColor ++ "\n";
+const itemTemplate = "{d}: " ++ setColor ++ resetColor ++ "{s}\n";
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -25,24 +28,22 @@ pub fn main() !void {
     var todoList = ArrayList(Item).init(allocator);
     var r: Result = Result{ .help = {} };
     const buf = try allocator.alloc(u8, 256);
+    const cWriter = ColoredWriter{ .writer = writer };
     while (r != Result.quit) {
         try writer.print("\nEnter a command. Enter help to list available commands: ", .{});
         const line = try reader.readUntilDelimiterOrEof(buf, '\n');
         r = todo(&todoList, line, allocator);
         switch (r) {
-            .quit => try writer.print(colored(Color.blue), .{"bye!\n"}),
-            .help => try writer.print(colored(Color.yellow), .{result.help}),
-            .emptyListHint => try writer.print(
-                colored(Color.yellow),
-                .{result.emptyListHint},
-            ),
+            .quit => try cWriter.print(Color.blue, "bye!"),
+            .help => try cWriter.print(Color.yellow, result.help),
+            .emptyListHint => try cWriter.print(Color.yellow, result.emptyListHint),
             .list => try printList(todoList, writer),
-            .unknownCommand => try writer.print(colored(Color.red), .{result.unknownCommand}),
+            .unknownCommand => try cWriter.print(Color.red, result.unknownCommand),
             .missingArg => |cmd| try writer.print(
-                colored2(Color.red, "{s} {s}"),
-                .{ cmd.tagName(), result.missingArg },
+                withColor2,
+                .{ Color.red.toCode(), cmd.tagName(), result.missingArg },
             ),
-            .doneIndexError => try writer.print(colored(Color.red), .{result.doneIndexError}),
+            .doneIndexError => try cWriter.print(Color.red, result.doneIndexError),
         }
     }
 }
@@ -60,15 +61,14 @@ fn printItem(index: usize, todoItem: Item, writer: Writer) !void {
         .done => Color.blue,
     };
     try writer.print(
-        "{d}: " ++ setColor ++ "{s}m{s}" ++ resetColor ++ "{s}\n",
+        itemTemplate,
         .{ index, descColor.toCode(), todoItem.description, state },
     );
 }
+pub const ColoredWriter = struct {
+    writer: std.fs.File.Writer,
 
-inline fn colored(color: Color) []const u8 {
-    return colored2(color, "{s}");
-}
-
-inline fn colored2(color: Color, body: []const u8) []const u8 {
-    return setColor ++ color.toCode() ++ "m" ++ body ++ resetColor;
-}
+    pub fn print(self: ColoredWriter, color: Color, msg: []const u8) !void {
+        try self.writer.print(withColor, .{ color.toCode(), msg });
+    }
+};

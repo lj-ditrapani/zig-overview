@@ -1,0 +1,3 @@
+- handle buf overflow when user types more than 256 chars
+- use struct + method better
+- organize color code (output.zig?)

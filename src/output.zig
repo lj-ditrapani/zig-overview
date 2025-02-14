@@ -13,8 +13,3 @@ pub const Color = enum {
         };
     }
 };
-
-pub const ColoredString = struct {
-    color: Color,
-    msg: []u8,
-};
