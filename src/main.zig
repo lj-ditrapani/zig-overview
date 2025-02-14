@@ -11,6 +11,9 @@ const MissingArgCommand = result.MissingArgCommand;
 const todo = @import("./todo.zig").todo;
 const Color = @import("./output.zig").Color;
 
+const setColor = "\u{001B}[";
+const resetColor = "\u{001B}[0m";
+
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -33,7 +36,7 @@ pub fn main() !void {
                 colored(Color.yellow),
                 .{result.emptyListHint},
             ),
-            .list => try printList(todoList, writer, buf),
+            .list => try printList(todoList, writer),
             .unknownCommand => try writer.print(colored(Color.red), .{result.unknownCommand}),
             .missingArg => |cmd| try writer.print(
                 colored2(Color.red, "{s} {s}"),
@@ -44,24 +47,22 @@ pub fn main() !void {
     }
 }
 
-fn printList(list: ArrayList(Item), writer: Writer, buf: []u8) !void {
+fn printList(list: ArrayList(Item), writer: Writer) !void {
     for (list.items, 1..) |todoItem, index| {
-        try printItem(index, todoItem, writer, buf);
+        try printItem(index, todoItem, writer);
     }
 }
 
-fn printItem(index: usize, todoItem: Item, writer: Writer, buf: []u8) !void {
+fn printItem(index: usize, todoItem: Item, writer: Writer) !void {
     const state = todoItem.state.toString();
     const descColor = switch (todoItem.state) {
         .todo => Color.green,
         .done => Color.blue,
     };
-    const msg = try bufPrint(
-        buf,
-        "{d}: \u{001B}[{s}m{s}\u{001B}[0m{s}",
+    try writer.print(
+        "{d}: " ++ setColor ++ "{s}m{s}" ++ resetColor ++ "{s}\n",
         .{ index, descColor.toCode(), todoItem.description, state },
     );
-    try writer.print("{s}\n", .{msg});
 }
 
 inline fn colored(color: Color) []const u8 {
@@ -69,5 +70,5 @@ inline fn colored(color: Color) []const u8 {
 }
 
 inline fn colored2(color: Color, body: []const u8) []const u8 {
-    return "\u{001B}[" ++ color.toCode() ++ "m" ++ body ++ "\u{001B}[0m";
+    return setColor ++ color.toCode() ++ "m" ++ body ++ resetColor;
 }
