@@ -17,7 +17,7 @@ pub fn main() !void {
     const reader = std.io.getStdIn().reader();
 
     try writer.print("\nTodo\n", .{});
-    try printInColor(Color.blue, "blue?", writer);
+    try writer.print(colorTemplate(Color.blue), .{"blue?"});
     var todoList = ArrayList(Item).init(allocator);
     var r: Result = Result{ .help = {} };
     const buf = try allocator.alloc(u8, 256);
@@ -47,6 +47,6 @@ fn printList(list: ArrayList(Item), writer: std.fs.File.Writer) !void {
     }
 }
 
-fn printInColor(color: Color, message: []const u8, writer: std.fs.File.Writer) !void {
-    try writer.print("\u{001B}[{d}m{s}\u{001B}[0m", .{ color.toCode(), message });
+inline fn colorTemplate(color: Color) []const u8 {
+    return "\u{001B}[" ++ color.toCode() ++ "m{s}\u{001B}[0m";
 }

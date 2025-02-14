@@ -4,12 +4,12 @@ pub const Color = enum {
     yellow,
     blue,
 
-    pub fn toCode(self: Color) u8 {
+    pub fn toCode(self: Color) []const u8 {
         return switch (self) {
-            .red => 31,
-            .green => 32,
-            .yellow => 33,
-            .blue => 34,
+            .red => "31",
+            .green => "32",
+            .yellow => "33",
+            .blue => "34",
         };
     }
 };
