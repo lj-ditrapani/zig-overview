@@ -1,3 +1,5 @@
+const Color = @import("./output.zig").Color;
+
 pub const State = enum {
     todo,
     done,
@@ -6,6 +8,13 @@ pub const State = enum {
         return switch (self) {
             .todo => "",
             .done => " (done)",
+        };
+    }
+
+    pub fn toColor(self: State) Color {
+        return switch (self) {
+            .todo => Color.green,
+            .done => Color.blue,
         };
     }
 };

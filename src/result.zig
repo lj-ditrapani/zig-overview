@@ -1,5 +1,4 @@
 pub const help =
-    \\
     \\Available commands:
     \\help                              Displays this help
     \\list                              Display the todo list
