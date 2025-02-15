@@ -1,9 +1,7 @@
 const std = @import("std");
-const bufPrint = std.fmt.bufPrint;
 const ArrayList = std.ArrayList;
 const Writer = std.fs.File.Writer;
-const item = @import("./item.zig");
-const Item = item.Item;
+const Item = @import("./item.zig").Item;
 const output = @import("./output.zig");
 const result = @import("./result.zig");
 const Result = result.Result;
@@ -26,8 +24,8 @@ pub fn main() !void {
     const cWriter = ColoredWriter{ .writer = writer };
     while (r != Result.quit) {
         try writer.print("Enter a command. Enter help to list available commands: ", .{});
-        const line = try reader.readUntilDelimiterOrEof(buf, '\n');
-        r = todo(&todoList, line, allocator);
+        const maybeLine = reader.readUntilDelimiterOrEof(buf, '\n');
+        r = try todo(&todoList, maybeLine, allocator);
         switch (r) {
             .quit => try cWriter.print(Color.blue, "bye!"),
             .help => try cWriter.print(Color.yellow, result.help),
@@ -36,6 +34,7 @@ pub fn main() !void {
             .unknownCommand => try cWriter.print(Color.red, result.unknownCommand),
             .missingArg => |cmd| try cWriter.printMissingArg(cmd),
             .doneIndexError => try cWriter.print(Color.red, result.doneIndexError),
+            .tooMuchInput => try handleTooMuchInput(cWriter, reader),
         }
     }
 }
@@ -44,4 +43,9 @@ fn printList(list: ArrayList(Item), writer: ColoredWriter) !void {
     for (list.items, 1..) |todoItem, index| {
         try writer.printItem(index, todoItem);
     }
+}
+
+fn handleTooMuchInput(writer: ColoredWriter, reader: anytype) !void {
+    try writer.print(Color.red, result.tooMuchInput);
+    try reader.skipUntilDelimiterOrEof('\n');
 }

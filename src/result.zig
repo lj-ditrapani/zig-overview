@@ -11,6 +11,7 @@ pub const unknownCommand = "I do not understand your command.  " ++
     "Enter help to display available commands.";
 pub const missingArg = "command requires an argument";
 pub const doneIndexError = "Done command must have a valid item index";
+pub const tooMuchInput = "You typed too many characters in.  Limit your command to 256 characters.";
 
 pub const Result = union(enum) {
     quit,
@@ -20,6 +21,7 @@ pub const Result = union(enum) {
     missingArg: MissingArgCommand,
     doneIndexError,
     emptyListHint,
+    tooMuchInput,
 };
 
 pub const MissingArgCommand = enum {

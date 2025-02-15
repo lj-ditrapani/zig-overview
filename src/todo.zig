@@ -4,10 +4,17 @@ const Allocator = @import("std").mem.Allocator;
 const item = @import("./item.zig");
 const Item = item.Item;
 const Result = @import("./result.zig").Result;
-
 const Command = enum { help, add, done, quit, list };
 
-pub fn todo(todoList: *ArrayList(Item), maybeLine: ?[]u8, allocator: Allocator) Result {
+pub fn todo(
+    todoList: *ArrayList(Item),
+    maybeEitherLine: anyerror!?[]u8,
+    allocator: Allocator,
+) anyerror!Result {
+    const maybeLine = maybeEitherLine catch |e| {
+        if (e == error.StreamTooLong) return .{ .tooMuchInput = {} };
+        return e;
+    };
     const line = maybeLine orelse return .{ .unknownCommand = {} };
     var parts = std.mem.tokenizeAny(u8, line, " \t\r");
     const cmdStr = parts.next() orelse return .{ .unknownCommand = {} };
