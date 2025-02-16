@@ -1,14 +1,9 @@
 const std = @import("std");
-const result = @import("./result.zig");
-const MissingArgCommand = result.MissingArgCommand;
-const item = @import("./item.zig");
-const Item = item.Item;
 
-const setColor = "\u{001B}[{s}m{s}";
-const resetColor = "\u{001B}[0m";
+pub const setColor = "\u{001B}[{s}m{s}";
+pub const resetColor = "\u{001B}[0m";
 const withColor = setColor ++ resetColor ++ "\n";
 const withColor2 = setColor ++ " {s}" ++ resetColor ++ "\n";
-const itemTemplate = "{d}: " ++ setColor ++ resetColor ++ "{s}\n";
 
 pub const Color = enum {
     red,
@@ -33,16 +28,7 @@ pub const ColoredWriter = struct {
         try self.writer.print(withColor, .{ color.toCode(), msg });
     }
 
-    pub fn printMissingArg(self: ColoredWriter, cmd: MissingArgCommand) !void {
-        try self.writer.print(withColor2, .{ Color.red.toCode(), cmd.tagName(), result.missingArg });
-    }
-
-    pub fn printItem(self: ColoredWriter, index: usize, todoItem: Item) !void {
-        const state = todoItem.state.toString();
-        const descColor = todoItem.state.toColor();
-        try self.writer.print(
-            itemTemplate,
-            .{ index, descColor.toCode(), todoItem.description, state },
-        );
+    pub fn print2(self: ColoredWriter, arg1: []const u8, arg2: []const u8) !void {
+        try self.writer.print(withColor2, .{ Color.red.toCode(), arg1, arg2 });
     }
 };

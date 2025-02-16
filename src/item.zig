@@ -1,4 +1,9 @@
-const Color = @import("./output.zig").Color;
+const std = @import("std");
+const ArrayList = std.ArrayList;
+const output = @import("./output.zig");
+const Color = output.Color;
+
+const itemTemplate = "{d}: " ++ output.setColor ++ output.resetColor ++ "{s}\n";
 
 pub const State = enum {
     todo,
@@ -22,4 +27,19 @@ pub const State = enum {
 pub const Item = struct {
     description: []const u8,
     state: State = State.todo,
+
+    pub fn print(self: Item, writer: anytype, index: usize) !void {
+        const state = self.state.toString();
+        const descColor = self.state.toColor();
+        try writer.print(
+            itemTemplate,
+            .{ index, descColor.toCode(), self.description, state },
+        );
+    }
 };
+
+pub fn printList(list: ArrayList(Item), writer: anytype) !void {
+    for (list.items, 1..) |todoItem, index| {
+        try todoItem.print(writer, index);
+    }
+}

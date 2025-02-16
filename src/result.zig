@@ -1,4 +1,13 @@
-pub const help =
+const std = @import("std");
+const ArrayList = std.ArrayList;
+const item = @import("./item.zig");
+const Item = item.Item;
+const printList = item.printList;
+const output = @import("output.zig");
+const ColoredWriter = output.ColoredWriter;
+const Color = output.Color;
+
+const helpMsg =
     \\Available commands:
     \\help                              Displays this help
     \\list                              Display the todo list
@@ -6,23 +15,53 @@ pub const help =
     \\done <todo item number>           Marks the item as done
     \\quit                              Exit the program
 ;
-pub const emptyListHint = "List is empty.  Try adding some items";
-pub const unknownCommand = "I do not understand your command.  " ++
+const emptyListHintMsg = "List is empty.  Try adding some items";
+const unknownCommandMsg = "I do not understand your command.  " ++
     "Enter help to display available commands.";
 pub const missingArg = "command requires an argument";
-pub const doneIndexError = "Done command must have a valid item index";
-pub const tooMuchInput = "You typed too many characters in.  Limit your command to 256 characters.";
+const doneIndexErrorMsg = "Done command must have a valid item index";
+const tooMuchInput = "You typed too many characters in.  Limit your command to 256 characters.";
 
 pub const Result = union(enum) {
     quit,
-    help,
     list,
-    unknownCommand,
+    warn: Warn,
+    err: Err,
     missingArg: MissingArgCommand,
-    doneIndexError,
-    emptyListHint,
     tooMuchInput,
+
+    pub fn printResult(self: Result, writer: ColoredWriter, todoList: ArrayList(Item), reader: anytype) !void {
+        switch (self) {
+            .quit => try writer.print(Color.blue, "bye!"),
+            .list => try printList(todoList, writer.writer),
+            .warn => |w| try w.print(writer),
+            .err => |e| try e.print(writer),
+            .missingArg => |cmd| try writer.print2(cmd.tagName(), missingArg),
+            .tooMuchInput => try handleTooMuchInput(writer, reader),
+        }
+    }
 };
+
+const Warn = struct {
+    msg: []const u8,
+
+    pub fn print(self: Warn, writer: ColoredWriter) !void {
+        try writer.print(Color.yellow, self.msg);
+    }
+};
+
+const Err = struct {
+    msg: []const u8,
+
+    pub fn print(self: Err, writer: ColoredWriter) !void {
+        try writer.print(Color.red, self.msg);
+    }
+};
+
+pub const help = Result{ .warn = Warn{ .msg = helpMsg } };
+pub const emptyListHint = Result{ .warn = Warn{ .msg = emptyListHintMsg } };
+pub const unknownCommand = Result{ .err = Err{ .msg = unknownCommandMsg } };
+pub const doneIndexError = Result{ .err = Err{ .msg = doneIndexErrorMsg } };
 
 pub const MissingArgCommand = enum {
     add,
@@ -36,4 +75,7 @@ pub const MissingArgCommand = enum {
     }
 };
 
-const UnexpectedArgCommand = enum { help, list, quit };
+fn handleTooMuchInput(writer: ColoredWriter, reader: anytype) !void {
+    try writer.print(Color.red, tooMuchInput);
+    try reader.skipUntilDelimiterOrEof('\n');
+}
