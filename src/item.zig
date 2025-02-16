@@ -43,3 +43,13 @@ pub fn printList(list: ArrayList(Item), writer: anytype) !void {
         try todoItem.print(writer, index);
     }
 }
+
+test "State.toString" {
+    try std.testing.expectEqualStrings("", State.todo.toString());
+    try std.testing.expectEqualStrings(" (done)", State.done.toString());
+}
+
+test "State.toColor" {
+    try std.testing.expectEqual(Color.green, State.todo.toColor());
+    try std.testing.expectEqual(Color.blue, State.done.toColor());
+}

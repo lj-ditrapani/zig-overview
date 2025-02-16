@@ -25,7 +25,7 @@ pub fn main() !void {
         try writer.print("Enter a command. Enter help to list available commands: ", .{});
         const maybeLine = reader.readUntilDelimiterOrEof(buf, '\n');
         const r = try todo(&todoList, maybeLine, allocator);
-        try r.printResult(cWriter, todoList, reader);
+        try r.printResult(todoList, cWriter, reader);
         if (r == Result.quit) break;
     }
 }

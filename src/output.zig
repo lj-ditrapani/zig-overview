@@ -32,3 +32,10 @@ pub const ColoredWriter = struct {
         try self.writer.print(withColor2, .{ Color.red.toCode(), arg1, arg2 });
     }
 };
+
+test "Color.toCode returns the ANSI color code" {
+    try std.testing.expectEqualStrings("31", Color.red.toCode());
+    try std.testing.expectEqualStrings("32", Color.green.toCode());
+    try std.testing.expectEqualStrings("33", Color.yellow.toCode());
+    try std.testing.expectEqualStrings("34", Color.blue.toCode());
+}

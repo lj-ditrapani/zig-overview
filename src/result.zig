@@ -30,7 +30,7 @@ pub const Result = union(enum) {
     missingArg: MissingArgCommand,
     tooMuchInput,
 
-    pub fn printResult(self: Result, writer: ColoredWriter, todoList: ArrayList(Item), reader: anytype) !void {
+    pub fn printResult(self: Result, todoList: ArrayList(Item), writer: ColoredWriter, reader: anytype) !void {
         switch (self) {
             .quit => try writer.print(Color.blue, "bye!"),
             .list => try printList(todoList, writer.writer),
@@ -70,4 +70,9 @@ pub const doneIndexError = Result{ .err = Err{ .msg = doneIndexErrorMsg } };
 fn handleTooMuchInput(writer: ColoredWriter, reader: anytype) !void {
     try writer.print(Color.red, tooMuchInput);
     try reader.skipUntilDelimiterOrEof('\n');
+}
+
+test "MissingArgCommand.tagName returns string description of command" {
+    try std.testing.expectEqualStrings("Add", MissingArgCommand.add.tagName());
+    try std.testing.expectEqualStrings("Done", MissingArgCommand.done.tagName());
 }
