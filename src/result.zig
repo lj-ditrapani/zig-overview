@@ -34,8 +34,8 @@ pub const Result = union(enum) {
         switch (self) {
             .quit => try writer.print(Color.blue, "bye!"),
             .list => try printList(todoList, writer.writer),
-            .warn => |w| try w.print(writer),
-            .err => |e| try e.print(writer),
+            .warn => |w| try writer.print(Color.yellow, w.msg),
+            .err => |e| try writer.print(Color.red, e.msg),
             .missingArg => |cmd| try writer.print2(cmd.tagName(), missingArg),
             .tooMuchInput => try handleTooMuchInput(writer, reader),
         }
@@ -44,26 +44,13 @@ pub const Result = union(enum) {
 
 const Warn = struct {
     msg: []const u8,
-
-    pub fn print(self: Warn, writer: ColoredWriter) !void {
-        try writer.print(Color.yellow, self.msg);
-    }
 };
 
 const Err = struct {
     msg: []const u8,
-
-    pub fn print(self: Err, writer: ColoredWriter) !void {
-        try writer.print(Color.red, self.msg);
-    }
 };
 
-pub const help = Result{ .warn = Warn{ .msg = helpMsg } };
-pub const emptyListHint = Result{ .warn = Warn{ .msg = emptyListHintMsg } };
-pub const unknownCommand = Result{ .err = Err{ .msg = unknownCommandMsg } };
-pub const doneIndexError = Result{ .err = Err{ .msg = doneIndexErrorMsg } };
-
-pub const MissingArgCommand = enum {
+const MissingArgCommand = enum {
     add,
     done,
 
@@ -74,6 +61,11 @@ pub const MissingArgCommand = enum {
         };
     }
 };
+
+pub const help = Result{ .warn = Warn{ .msg = helpMsg } };
+pub const emptyListHint = Result{ .warn = Warn{ .msg = emptyListHintMsg } };
+pub const unknownCommand = Result{ .err = Err{ .msg = unknownCommandMsg } };
+pub const doneIndexError = Result{ .err = Err{ .msg = doneIndexErrorMsg } };
 
 fn handleTooMuchInput(writer: ColoredWriter, reader: anytype) !void {
     try writer.print(Color.red, tooMuchInput);
